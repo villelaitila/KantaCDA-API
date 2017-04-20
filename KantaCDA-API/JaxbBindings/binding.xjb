@@ -7,7 +7,7 @@
         <xjc:simple />
     </jaxb:globalBindings>
 
-   <jaxb:bindings schemaLocation="..\Schemas\POCD_MT000040_Fi.xsd">
+   <jaxb:bindings schemaLocation="../Schemas/POCD_MT000040_Fi.xsd">
         <jaxb:bindings node="//xs:complexType[@name='POCD_MT000040.ObservationMedia']/xs:attribute[@name='ID']">
             <jaxb:property name="AttributeID"></jaxb:property>
         </jaxb:bindings>
