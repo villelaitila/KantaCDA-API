@@ -104,7 +104,7 @@ public class MaarittelyKonfiguraatio {
     private void kasitteleTyyppi(Configuration config, String templateId) {
         MaarittelyLuokka luokka = MaarittelyLuokka.VANHA;
         for (String token : config.getStringArray(templateId)) {
-            if ( (token == null) && "".equals(token) ) {
+            if ( (token == null) || "".equals(token) ) {
                 continue;
             }
             token = token.trim().toUpperCase();
