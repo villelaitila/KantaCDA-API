@@ -30,8 +30,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- REV: log4j-api tulee todennäköisesti log4j-coren kautta, joten erillinen 
-			julistus turha -->
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j-api</artifactId>
@@ -60,14 +58,6 @@
 			<version>1.10</version>
 		</dependency>
 		
-		<!-- REV: Kommentoidut dependencyt pois -->
-		
-		<!-- Dependencyt bean validationin käyttöön -->
-		<!-- <dependency> -->
-		<!-- <groupId>javax.validation</groupId> -->
-		<!-- <artifactId>validation-api</artifactId> -->
-		<!-- <version>1.1.0.Final</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
@@ -183,22 +173,4 @@
 			</build>
 		</profile>
 	</profiles>
-
-	<!-- REV2: Käyttäjätunnus pois -->
-	<developers>
-		<developer>
-			<id>w000tvl</id>
-			<name>Teemu Lempiäinen</name>
-			<email>teemu.lempiainen@kela.fi</email>
-			<roles>
-				<role>Sovelluskehittäjä</role>
-			</roles>
-		</developer>
-	</developers>
-	<!-- REV2: Jazz:n osoite pois, muutenkin vaihdettava osoittamaan open source 
-		repoon... -->
-	<scm>
-		<connection>scm:jazz:https://cm.kela.fi/ccm:KantaCDA-API-1.1.24</connection>
-		<developerConnection>scm:jazz:https://cm.kela.fi/ccm:KantaCDA-API-1.1.24</developerConnection>
-	</scm>
 </project>
