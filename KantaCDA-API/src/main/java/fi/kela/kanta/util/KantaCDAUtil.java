@@ -1,18 +1,18 @@
-/*******************************************************************************
- * Copyright 2017 Kansaneläkelaitos
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License.  You may obtain a copy
- * of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+<!--
+  Copyright 2020 Kansaneläkelaitos
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+-->
 package fi.kela.kanta.util;
 
 import java.io.FileNotFoundException;
@@ -20,6 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -29,13 +34,20 @@ import org.apache.logging.log4j.Logger;
  * KantaCDAUtils Apumetodien kaatoluokka
  */
 public class KantaCDAUtil {
+    private static final Object iterLock = new Object();
 
     private KantaCDAUtil() {
     }
 
     public static final String CONTROL_PATTERN = "\\r|\\n";
+    
+    public static final String HETU_DATE_FORMAT = "ddMMyy";
+    
+    public static final String Y_TUNNUS_EXPR = "([0-9]{7})-[0-9]";
 
     private static final Logger LOGGER = LogManager.getLogger(KantaCDAUtil.class);
+
+    private static Map<String, String> iterUnit;
 
     /**
      * muodostaa syntymäajan hetun perusteella
@@ -61,6 +73,37 @@ public class KantaCDAUtil {
             century = "21";
         }
         return century + hetu.substring(4, 6) + hetu.substring(2, 4) + hetu.substring(0, 2);
+    }
+    
+    /**
+     * muodostaa syntymäajan hetun perusteella annetulla muotoilulla
+     * 
+     * @param hetu
+     * @param format
+     * @return syntymäaika
+     */
+    public static String hetuToBirthTime(String hetu, String format) {
+    	if (onkoNullTaiTyhja(format)) {
+    		return hetuToBirthTime(hetu);
+    	}
+    	if ( onkoNullTaiTyhja(hetu) || hetu.length() != 11 ) {
+            return null;
+        }
+        Date birthDate = hetuToDate(hetu);
+        if (birthDate == null) {
+        	return null;
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+    	return sdf.format(birthDate);
+    }
+    
+    public static Date hetuToDate(String hetu) {
+    	SimpleDateFormat hetuformat = new SimpleDateFormat(HETU_DATE_FORMAT);
+    	try {
+			return hetuformat.parse(hetu.substring(0, 6));
+		} catch (ParseException e) {
+			return null;
+		}
     }
 
     /**
@@ -114,5 +157,21 @@ public class KantaCDAUtil {
 
     public static boolean onkoNullTaiTyhja(String merkkijono) {
         return null == merkkijono || merkkijono.isEmpty();
+    }
+
+    public static String muunnaIterUnit(String unit) {
+        if ( iterUnit == null ) {
+            iterUnit = new HashMap<String, String>();
+            iterUnit.put("d", "pv");
+        }
+        String vali = iterUnit.get(unit);
+        return vali != null ? vali : unit;
+    }
+    
+    public static boolean onkoYTunnus(String tunnus) {
+    	if (null == tunnus || tunnus.length() != 9) {
+			return false;
+		}
+		return tunnus.matches(Y_TUNNUS_EXPR);
     }
 }

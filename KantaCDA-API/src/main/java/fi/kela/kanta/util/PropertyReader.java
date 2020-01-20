@@ -1,18 +1,18 @@
-/*******************************************************************************
- * Copyright 2017 Kansaneläkelaitos
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License.  You may obtain a copy
- * of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+<!--
+  Copyright 2020 Kansaneläkelaitos
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+-->
 package fi.kela.kanta.util;
 
 import java.io.FileNotFoundException;
@@ -80,7 +80,11 @@ public class PropertyReader {
             throws IOException {
         Properties properties = null;
 
-        if ( cache != null && cache.containsKey(propertiesFileName) ) {
+        if ( cache == null ) {
+            cache = new ConcurrentHashMap<>();
+        }
+
+        if ( cache.containsKey(propertiesFileName) ) {
             if ( LOGGER.isTraceEnabled() ) {
                 LOGGER.trace("Getting Properties from cache for " + propertiesFileName);
             }
@@ -93,10 +97,15 @@ public class PropertyReader {
                 LOGGER.trace("Reading Properties from System for " + propertiesFileName);
             }
             properties = null;
-            cache = new ConcurrentHashMap<String, Properties>();
 
-            for (InputStream is : getResourceStreams(propertiesFileName, defaultPropertiesFileName,
-                    PropertyReader.class.getClassLoader())) {
+            List<InputStream> streams = getResourceStreams(propertiesFileName, defaultPropertiesFileName,
+                    PropertyReader.class.getClassLoader());
+            if ( streams != null ) {
+                Object[] args = { streams.size(), propertiesFileName, defaultPropertiesFileName };
+                LOGGER.info(String.format("Found %1$s property file(s) with name '%2$s' with default file name '%3$s'",
+                        args));
+            }
+            for (InputStream is : streams) {
                 InputStreamReader inputStreamReader = new InputStreamReader(is, ENCODING_UTF8);
                 try {
                     if ( properties == null ) {
@@ -128,7 +137,21 @@ public class PropertyReader {
                 cache.put(propertiesFileName, properties);
             }
         }
+        if ( properties == null ) {
+            Object[] args = { propertiesFileName, defaultPropertiesFileName };
+            String errorText = null;
+            if ( defaultPropertiesFileName == null ) {
+                errorText = String.format("No property file(s) were found with name '%s'", args);
+            }
+            else {
+                errorText = String.format(
+                        "No property file(s) were found with name '%1$s' or with default file name '%2$s'", args);
+            }
+            LOGGER.error(errorText);
+            throw new IOException(errorText);
+        }
         return properties;
+
     }
 
     /**
@@ -285,7 +308,7 @@ public class PropertyReader {
      */
     public static List<InputStream> getResourceStreams(final String name, String defaultPropertiesFileName,
             final ClassLoader classLoader) throws IOException {
-        final List<InputStream> list = new ArrayList<InputStream>();
+        final List<InputStream> list = new ArrayList<>();
         final Enumeration<URL> primarySystemResources = (classLoader == null ? ClassLoader.getSystemClassLoader()
                 : classLoader).getResources(name);
         while (primarySystemResources.hasMoreElements()) {

@@ -1,18 +1,19 @@
-/*******************************************************************************
- * Copyright 2017 Kansaneläkelaitos
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License.  You may obtain a copy
- * of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+<!--
+  Copyright 2020 Kansaneläkelaitos
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+-->
+
 package fi.kela.kanta.cda;
 
 public final class KantaCDAConstants {
@@ -136,6 +137,58 @@ public final class KantaCDAConstants {
         public static final String TARTUNTATAUTILAIN_MUKAINEN_LAAKE = "216";
 
     }
+    
+    public final static class OstopalvelunValtuutus {
+        private OstopalvelunValtuutus() {
+        }
+
+        public static final String CODESYSTEM = "1.2.246.537.6.12.2002.362";
+        public static final String OSVA = "0";
+        public static final String ASIAKIRJAN_TUNNISTE = "1";
+        public static final String ASIAKIRJAN_YKSILOIVA_TUNNISTE = "2";
+        public static final String PALVELUN_TUOTTAJA = "12";
+        public static final String PALVELUN_TUOTTAJAN_YKSILOINTITUNNUS = "13";
+        public static final String PALVELUN_TUOTTAJAN_NIMI = "14";
+        public static final String OSTOP_TUOTT_OIKEUS_HAKEA_PALVELUN_JARJ_REK = "15";
+        public static final String REKISTERINPITAJA_HAKU = "16";
+        public static final String REKISTERI_HAKU = "17";
+        public static final String REKISTERIN_TARKENNE_HAKU = "18";
+        public static final String REKISTERIN_TARKENTIMEN_NIMI_HAKU = "19";
+        public static final String OSTOP_TUOTT_OIKEUS_TALLENTAA_PALV_JARJ_REK = "20";
+        public static final String REKISTERINPITAJA_TALLENNUS = "21";
+        public static final String REKISTERI_TALLENNUS = "22";
+        public static final String REKISTERIN_TARKENNE_TALLENNUS = "23";
+        public static final String REKISTERIN_TARKENTIMEN_NIMI_TALLENNUS = "24";
+        public static final String POTILAS = "25";
+        public static final String HENKILOTUNNUS = "26";
+        public static final String SUKU_JA_ETUNIMET = "27";
+        public static final String SYNTYMAAIKA = "28";
+        public static final String LUOVUTETTAVAT_ASIAKIRJAT = "29";
+        public static final String KAIKKI_ASIAKIRJAT = "30";
+        public static final String LUOVUTETTAVAN_AINEISTON_AIKAVALI = "31";
+        public static final String LUOVUTETTAVAT_PALVELUTAPAHTUMAT = "32";
+        public static final String OSTOPALVELUN_TYYPPI = "3";
+        public static final String OSTOPALVELUN_TYYPPI_KOODI = "4";
+        public static final String ASIAKIRJAN_TALLENTAJA = "33";
+        public static final String AMMATTIHENKILON_TUNNISTE = "34";
+        public static final String AMMATTIHENKILON_NIMI = "35";
+        public static final String AMMATTIHENKILON_PALVELUYKSIKKO = "36";
+        public static final String ASIAKIRJAN_TEKEMISEN_AJANKOHTA = "37";
+        public static final String LOMAKKEEN_METATIEDOT = "38";
+        public static final String TEMPLATEID = "39";
+        public static final String MAARITTELYVERSIO = "40";
+        public static final String PALVELUN_JARJESTAJAN_ARKISTOIMA_PALVELUTAPAHTUMA = "41";
+        public static final String PALVELUTAPAHTUMAN_TUNNISTE = "42";
+        public static final String OSTOPALVELUN_VALTUUTUKSEN_VOIMASSAOLO = "5";
+        public static final String ASIAKIRJA_VOIMASSA = "6";
+        public static final String PALVELUN_JARJESTAJA = "7";
+        public static final String PALVELUN_JARJESTAJA_PALVELUYKSIKKO = "10";
+        public static final String PALVELUN_JARJESTAJA_PALVELUYKSIKON_NIMI = "11";
+        public static final String PALVELUN_JARJESTAJA_YKSILOINTITUNNUS = "8";
+        public static final String PALVELUN_JARJESTAJAN_NIMI = "9";
+
+
+    }
 
     public enum ReseptisanomanTyyppi {
         LAAKEMAARAYS(1),
@@ -187,6 +240,11 @@ public final class KantaCDAConstants {
         ULKOMAILLA_TAPAHTUVAA_LÄÄKKEEN_OSTOA_VARTEN_ANNETTAVA(22),
         ULKOMAAN_MATKAA_VARTEN_ANNETTAVA_JÄLJENNÖS(23),
         UUSIMISPYYNNÖN_LÄHETTÄMINEN(24),
+        TEKNISEN_HAIRION_SELVITTAMINEN(25),
+        KIELLETYN_RESEPTIN_HAKEMINEN_KORJAAMISTA_VARTEN(26),
+        KIELTOJEN_YLLAPITO(27),
+        POTILASOHJEEN_TULOSTUS_JALKIKATEEN(28),
+        APTEEKIN_ANNOSJAKELUPOTILAIDEN_LAAKEMAARAYKSET(29),
         MITÄTÖINTI(3),
         KORJAUS(4),
         YHTEENVETO_SÄHKÖISISTÄ_LÄÄKEMÄÄRÄYKSISTÄ(5),
@@ -231,6 +289,53 @@ public final class KantaCDAConstants {
         public int getTyyppiValue() {
             return tyyppi;
         }
+    }
+    
+    public enum OstopalvelunTyyppi {
+    	POTILASKOHTAINEN_OSTOPALVELU(1),
+    	VAESTOTASOINEN_OSTOPALVELU(2);
+    	
+    	private final int tyyppi;
+    	
+    	private OstopalvelunTyyppi(int tyyppi) {
+    		this.tyyppi = tyyppi;
+    	}
+    	
+    	public String getTyyppi() {
+    		return String.valueOf(tyyppi);
+    	}
+    	
+    	public int getTyyppiValue() {
+    		return tyyppi;
+    	}
+    }
+    
+    public enum PotilasasiakirjanRekisteritunnus {
+    	ERILLISSAILYTYS(1),
+    	AMMATINHARJOITTAJA(10),
+    	KAYTOSTA_POISTETUT_ASIAKIRJAT(11),
+    	TIEDONHALLINTAPALVELUN_ASIAKIRJAT(12),
+    	ARKISTOASIAKIRJAT(13),
+    	JULKINEN_TERVEYDENHUOLTO(2),
+    	YKSITYINEN_TERVEYDENHUOLTO(3),
+    	TYOTERVEYSHUOLTO(4),
+    	ILMOITUKSET_JA_TILASTOREKISTERIT(6),
+    	POTILAAN_OMAT_ASIAKIRJAT(7),
+    	TUTKIMUSREKISTERIT(8);
+    	
+    	private final int rekisteritunnus;
+    	
+    	private PotilasasiakirjanRekisteritunnus(int rekisteritunnus) {
+    		this.rekisteritunnus = rekisteritunnus;
+    	}
+    	
+    	public String getRekisteritunnus() {
+    		return String.valueOf(rekisteritunnus);
+    	}
+    	
+    	public int getRekisteritunnusValue() {
+    		return rekisteritunnus;
+    	}
     }
 
     public enum NullFlavor {

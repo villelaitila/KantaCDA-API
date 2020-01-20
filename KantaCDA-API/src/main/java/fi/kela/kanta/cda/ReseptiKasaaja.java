@@ -1,18 +1,18 @@
-/*******************************************************************************
- * Copyright 2017 Kansaneläkelaitos
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License.  You may obtain a copy
- * of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+<!--
+  Copyright 2020 Kansaneläkelaitos
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+-->
 package fi.kela.kanta.cda;
 
 import java.math.BigInteger;
@@ -1003,8 +1003,8 @@ public abstract class ReseptiKasaaja extends Kasaaja {
 
     /**
      * Luo entryRelationShip/observation rakenteet lääkemuodoille luo elementinn jos kyseessä lääketietokannan valmiste
-     * tai valmisteen laji on: vaikuttavan aineen nimellä määrätty lääke(9) tai vääketietokannan ulkopuolinen
-     * valmiste(6) elementti luodaan kaikille laakemaarayksen valmisteen käyttötavoille
+     * tai valmisteen laji on: vaikuttavan aineen nimellä määrätty lääke(9), lääketietokannan ulkopuolinen valmiste(6)
+     * tai hoitotarvike (10) elementti luodaan kaikille laakemaarayksen valmisteen käyttötavoille
      *
      * @param laakemaarays
      *            LaakemaaraysTO josta tiedot haetaan
@@ -1014,7 +1014,8 @@ public abstract class ReseptiKasaaja extends Kasaaja {
         Collection<POCDMT000040EntryRelationship> list = new ArrayList<POCDMT000040EntryRelationship>();
         if ( null != laakemaarays.getValmiste() && (onkoLaaketietokannanValmiste(laakemaarays)
                 || "9".equals(laakemaarays.getValmiste().getYksilointitiedot().getValmisteenLaji())
-                || "6".equals(laakemaarays.getValmiste().getYksilointitiedot().getValmisteenLaji())) ) {
+                || "6".equals(laakemaarays.getValmiste().getYksilointitiedot().getValmisteenLaji())
+                || "10".equals(laakemaarays.getValmiste().getYksilointitiedot().getValmisteenLaji())) ) {
             for (ValmisteenKayttotapaTO kayttotapa : laakemaarays.getValmiste().getKayttotavat()) {
                 POCDMT000040EntryRelationship laakemuoto = of.createPOCDMT000040EntryRelationship();
                 laakemuoto.setTypeCode(XActRelationshipEntryRelationship.COMP);
@@ -1167,7 +1168,7 @@ public abstract class ReseptiKasaaja extends Kasaaja {
         iterointi.setTypeCode(XActRelationshipEntryRelationship.COMP);
         iterointi.setObservation(of.createPOCDMT000040Observation());
         iterointi.getObservation().setText(of.createED());
-        iterointi.getObservation().getText().getContent().add(laakemaarays.getIterointiTeksti());
+        iterointi.getObservation().getText().getContent().add(luoIterointiTeksti(laakemaarays));
         iterointi.getObservation().setRepeatNumber(of.createIVLINT());
         iterointi.getObservation().getRepeatNumber().setValue(BigInteger.valueOf(laakemaarays.getIterointienMaara()));
         IVLTS iterointiValue = of.createIVLTS();
@@ -1564,4 +1565,15 @@ public abstract class ReseptiKasaaja extends Kasaaja {
         return text;
     }
 
+    protected String luoIterointiTeksti(LaakemaaraysTO laakemaarays) {
+        StringBuilder teksti = new StringBuilder();
+        teksti.append(laakemaarays.getIterointiTeksti());
+        if ( laakemaarays.getIterointienValiValue() != null ) {
+            teksti.append(" " + laakemaarays.getIterointienValiValue());
+            if ( !onkoNullTaiTyhja(laakemaarays.getIterointienValiUnit()) ) {
+                teksti.append(" " + KantaCDAUtil.muunnaIterUnit(laakemaarays.getIterointienValiUnit()));
+            }
+        }
+        return teksti.toString();
+    }
 }

@@ -1,20 +1,21 @@
-/*******************************************************************************
- * Copyright 2017 Kansaneläkelaitos
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License.  You may obtain a copy
- * of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+<!--
+  Copyright 2020 Kansaneläkelaitos
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+-->
 package fi.kela.kanta.to;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -30,7 +31,7 @@ public class LaakemaarayksenToimitusTO extends LaakemaaraysTO {
 
     private String koostumuksenSelitys;
     // numeerinen muoto
-    private int toimitettuKokonaismaaraValue;
+    private BigDecimal toimitettuKokonaismaaraValue;
     // numeerisen muodon yksikkö
     private String toimitettuKokonaismaaraUnit;
     // laskukaavamuoto
@@ -38,7 +39,7 @@ public class LaakemaarayksenToimitusTO extends LaakemaaraysTO {
     // tekstimuoto
     private String toimitettuKokonaismaaraText;
     // numeerinen muoto
-    private int jaljellaOlevaMaaraValue;
+    private BigDecimal jaljellaOlevaMaaraValue;
     // numeerisen muodon yksikkö
     private String jaljellaOlevaMaaraUnit;
     // laskukaavamuoto
@@ -111,11 +112,11 @@ public class LaakemaarayksenToimitusTO extends LaakemaaraysTO {
         this.koostumuksenSelitys = koostumuksenSelitys;
     }
 
-    public int getToimitettuKokonaismaaraValue() {
+    public BigDecimal getToimitettuKokonaismaaraValue() {
         return toimitettuKokonaismaaraValue;
     }
 
-    public void setToimitettuKokonaismaaraValue(int toimitettuKokonaismaaraValue) {
+    public void setToimitettuKokonaismaaraValue(BigDecimal toimitettuKokonaismaaraValue) {
         this.toimitettuKokonaismaaraValue = toimitettuKokonaismaaraValue;
     }
 
@@ -143,11 +144,11 @@ public class LaakemaarayksenToimitusTO extends LaakemaaraysTO {
         this.toimitettuKokonaismaaraText = toimitettuKokonaismaaraText;
     }
 
-    public int getJaljellaOlevaMaaraValue() {
+    public BigDecimal getJaljellaOlevaMaaraValue() {
         return jaljellaOlevaMaaraValue;
     }
 
-    public void setJaljellaOlevaMaaraValue(int jaljellaOlevaMaaraValue) {
+    public void setJaljellaOlevaMaaraValue(BigDecimal jaljellaOlevaMaaraValue) {
         this.jaljellaOlevaMaaraValue = jaljellaOlevaMaaraValue;
     }
 

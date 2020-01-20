@@ -1,18 +1,18 @@
-/*******************************************************************************
- * Copyright 2017 Kansaneläkelaitos
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License.  You may obtain a copy
- * of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+<!--
+  Copyright 2020 Kansaneläkelaitos
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+-->
 package fi.kela.kanta.cda;
 
 import java.util.ArrayList;
@@ -294,6 +294,7 @@ public class ReseptinMitatointiKasaajaEteenpainYht extends ReseptiKasaaja {
 
         addAuthor(alkuperainenClinicalDocument, luoAuthor(mitatointi.getMitatoija()));
         addCustodian(alkuperainenClinicalDocument);
+        addAuthorization(alkuperainenClinicalDocument, alkuperainenLaakemaarays.getAlaikaisenKieltoKoodi());
         // Poistetaan alkuperäisellä dokumentilla olevat viittaukset
         alustaRelatedDocuments();
         addRelatedDocument(alkuperainenClinicalDocument, alkuperainenLaakemaarays.getOid(),
@@ -610,7 +611,8 @@ public class ReseptinMitatointiKasaajaEteenpainYht extends ReseptiKasaaja {
     @Override
     protected POCDMT000040Entry luoAsiakirjanMuutTiedot(POCDMT000040Entry entry) {
         luoTartuntatautilainMukainen(entry);
-
+        luoUudistamiskielto(entry);
+        
         // Mitätöinnin perustelu ja korjaaja
         POCDMT000040Component4 mitatoinninPerusteluJaMitatoijaComponent = luoMitatoinninSyyPerusteluJaMitatoija(
                 mitatointi);
@@ -714,5 +716,32 @@ public class ReseptinMitatointiKasaajaEteenpainYht extends ReseptiKasaaja {
     protected boolean onkoObservationCodeCode(POCDMT000040Observation observation, String code) {
         return null != observation && null != observation.getCode() && null != observation.getCode().getCode()
                 && code.equals(observation.getCode().getCode());
+    }
+
+    protected void luoUudistamiskielto(POCDMT000040Entry entry) {
+        // Jos alkuperäisellä asiakirjalla ei ollut tietoa uudistamiskiellosta, lisätään se.
+        POCDMT000040Component4 component = findComponentByCode(entry.getOrganizer().getComponents(),
+                KantaCDAConstants.Laakityslista.UUSIMISKIELTO);
+        if ( component == null ) {
+            entry.getOrganizer().getComponents().add(
+                    luoBLComponent(KantaCDAConstants.Laakityslista.UUSIMISKIELTO, mitatointi.isUudistamiskielto()));
+
+            // uudistamiskiellon syy ja perustelu, jos uudistamiskielto arvossa true
+            if ( mitatointi.isUudistamiskielto() ) {
+                // uudistamiskiellon syyluoUudistamiskielto
+                POCDMT000040Component4 uudistamiskiellonSyyComp = of.createPOCDMT000040Component4();
+                uudistamiskiellonSyyComp.setObservation(of.createPOCDMT000040Observation());
+                CE uudistamiskiellonsyyValue = of.createCE();
+                fetchAttributes(mitatointi.getUusimiskiellonSyy() + ".muutoksensyy", uudistamiskiellonsyyValue);
+                uudistamiskiellonsyyValue.setCode(mitatointi.getUusimiskiellonSyy());
+                // uudistamiskiellon perustelu
+                uudistamiskiellonsyyValue.setOriginalText(of.createED());
+                uudistamiskiellonsyyValue.getOriginalText().getContent().add(mitatointi.getUusimiskiellonPerustelu());
+
+                asetaObservation(KantaCDAConstants.Laakityslista.UUDISTAMISKIELLON_SYY, uudistamiskiellonsyyValue,
+                        uudistamiskiellonSyyComp.getObservation());
+                entry.getOrganizer().getComponents().add(uudistamiskiellonSyyComp);
+            }
+        }
     }
 }

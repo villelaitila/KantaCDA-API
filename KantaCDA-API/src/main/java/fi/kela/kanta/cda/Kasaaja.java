@@ -1,18 +1,18 @@
-/*******************************************************************************
- * Copyright 2017 Kansaneläkelaitos
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License.  You may obtain a copy
- * of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+<!--
+  Copyright 2020 Kansaneläkelaitos
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+-->
 package fi.kela.kanta.cda;
 
 import java.math.BigInteger;
@@ -27,7 +27,9 @@ import org.hl7.v3.AdxpPostBox;
 import org.hl7.v3.AdxpPostalCode;
 import org.hl7.v3.AdxpStreetAddressLine;
 import org.hl7.v3.CD;
+import org.hl7.v3.CE;
 import org.hl7.v3.CR;
+import org.hl7.v3.CS;
 import org.hl7.v3.CV;
 import org.hl7.v3.EnDelimiter;
 import org.hl7.v3.EnFamily;
@@ -42,8 +44,10 @@ import org.hl7.v3.PN;
 import org.hl7.v3.POCDMT000040AssignedCustodian;
 import org.hl7.v3.POCDMT000040AssignedEntity;
 import org.hl7.v3.POCDMT000040Author;
+import org.hl7.v3.POCDMT000040Authorization;
 import org.hl7.v3.POCDMT000040ClinicalDocument;
 import org.hl7.v3.POCDMT000040Component5;
+import org.hl7.v3.POCDMT000040Consent;
 import org.hl7.v3.POCDMT000040EncompassingEncounter;
 import org.hl7.v3.POCDMT000040HealthCareFacility;
 import org.hl7.v3.POCDMT000040InfrastructureRootTemplateId;
@@ -72,11 +76,13 @@ public abstract class Kasaaja {
 
     public static final String BASE_OID_PROPERTY = "base.oid";
     public static final String LM_PROPERTY_PREFIX = "LM";
+    public static final String ARKISTO_PROPERTY_PREFIX = "ARK";
     public static final String LM_CONTENTS = "contentsCode";
     /**
      * Avain jota käytetään property-tiedostosta code arvojen hakuun. Esim. 'LM.uusimispyynto.code'.
      */
     public static final String LM_UUSIMISPYYNTO = "uusimispyynto";
+    public static final String TEMPLATE_ID_ROOT_FORMAT = "templateId%d";
     private long sequence = 0;
 
     // http://koodistopalvelu.kanta.fi/codeserver/pages/code-list-page.xhtml?versionKey=347
@@ -165,6 +171,9 @@ public abstract class Kasaaja {
         return obsId.toString();
     }
 
+    protected void setDocumentId(String Id) {
+    	documentId = Id;
+    }
     protected String getDocumentId(final LeimakentatTO<?> leimakentat) {
 
         if ( StringUtils.isEmpty(documentId) ) {
@@ -194,21 +203,7 @@ public abstract class Kasaaja {
             fetchAttributes("templateId1", templateIdElement);
             clinicalDocument.getTemplateIds().add(templateIdElement);
 
-            // templateId 2 ja 3
-            String templateId2 = getProperty("templateId2.root");
-            if ( !onkoNullTaiTyhja(templateId2) ) {
-                POCDMT000040InfrastructureRootTemplateId tempateIdElement2 = of
-                        .createPOCDMT000040InfrastructureRootTemplateId();
-                fetchAttributes("templateId2", tempateIdElement2);
-                clinicalDocument.getTemplateIds().add(tempateIdElement2);
-                String templateId3 = getProperty("templateId3.root");
-                if ( !onkoNullTaiTyhja(templateId3) ) {
-                    POCDMT000040InfrastructureRootTemplateId temptaeIdElement3 = of
-                            .createPOCDMT000040InfrastructureRootTemplateId();
-                    fetchAttributes("templateId3", temptaeIdElement3);
-                    clinicalDocument.getTemplateIds().add(temptaeIdElement3);
-                }
-            }
+            fetchRestTemplateIds(clinicalDocument,2);
 
         }
         else {
@@ -264,6 +259,40 @@ public abstract class Kasaaja {
         clinicalDocument.setVersionNumber(of.createINT());
         clinicalDocument.getVersionNumber().setValue(BigInteger.valueOf(((long) leimakentat.getVersio()) + 1));
     }
+
+	/**
+	 * hakee property tiedostosta templateId[startNum].root arvoja ja lisää niitä clinicalDocumenttiin
+	 * kunnes arvoa ei löydy.
+	 *  
+	 * @param clinicalDocument
+	 */
+	protected void fetchRestTemplateIds(POCDMT000040ClinicalDocument clinicalDocument, int startNum) {
+		// templateId 2 ja 3
+		String templateId = getProperty(String.format(TEMPLATE_ID_ROOT_FORMAT, startNum)+".root");
+		while(templateId != null && !templateId.isEmpty()) {
+			POCDMT000040InfrastructureRootTemplateId templateIdElement = of.createPOCDMT000040InfrastructureRootTemplateId();
+			fetchAttributes(String.format(TEMPLATE_ID_ROOT_FORMAT, startNum++), templateIdElement);
+			clinicalDocument.getTemplateIds().add(templateIdElement);
+			//Hae seuraava templateId.root
+			templateId = getProperty(String.format(TEMPLATE_ID_ROOT_FORMAT, startNum)+".root");
+		}
+		/*
+		String templateId2 = getProperty("templateId2.root");
+		if ( !onkoNullTaiTyhja(templateId2) ) {
+		    POCDMT000040InfrastructureRootTemplateId tempateIdElement2 = of
+		            .createPOCDMT000040InfrastructureRootTemplateId();
+		    fetchAttributes("templateId2", tempateIdElement2);
+		    clinicalDocument.getTemplateIds().add(tempateIdElement2);
+		    String templateId3 = getProperty("templateId3.root");
+		    if ( !onkoNullTaiTyhja(templateId3) ) {
+		        POCDMT000040InfrastructureRootTemplateId temptaeIdElement3 = of
+		                .createPOCDMT000040InfrastructureRootTemplateId();
+		        fetchAttributes("templateId3", temptaeIdElement3);
+		        clinicalDocument.getTemplateIds().add(temptaeIdElement3);
+		    }
+		}
+		*/
+	}
 
     protected void addRecordTarget(POCDMT000040ClinicalDocument clinicalDocument, HenkilotiedotTO henkilotiedot) {
         POCDMT000040RecordTarget recordTarget = of.createPOCDMT000040RecordTarget();
@@ -443,6 +472,15 @@ public abstract class Kasaaja {
         assignedCustodian.getRepresentedCustodianOrganization().setAddr(addr);
     }
 
+	protected void addAuthorization(POCDMT000040ClinicalDocument clinicalDocument, String alaikaisenKieltoKoodi) {
+		if (StringUtils.isNotBlank(alaikaisenKieltoKoodi)) {
+			POCDMT000040Authorization authorization = of.createPOCDMT000040Authorization();
+			authorization.getTypeCodes().add("AUTH");
+			authorization.setConsent(createAuthorizationConsent(alaikaisenKieltoKoodi));
+			clinicalDocument.getAuthorizations().add(authorization);
+		}
+	}
+    
     /**
      * Lisää clinicalDocumentiin relatedDocument rakenteen johon sijoitetaan annetut oid ja setId ja haetaan code
      * elemettiin arvot annetulla propertycodella <relatedDocument typeCode="RPLC/APND/..."> <parentDocument>
@@ -593,6 +631,10 @@ public abstract class Kasaaja {
         if ( fetchAttributes("localHeader.recordStatus", recordStatus) ) {
             localHeader.setRecordStatus(recordStatus);
         }
+        CV custodianTypeCode = of.createCV();
+        if ( fetchAttributes("localHeader.custodianTypeCode", custodianTypeCode) ) {
+        	localHeader.setCustodianTypeCode(custodianTypeCode);
+        }
         CV retentionPeriodClass = of.createCV();
         if ( fetchAttributes("localHeader.retentionPeriodClass", retentionPeriodClass) ) {
             localHeader.setRetentionPeriodClass(retentionPeriodClass);
@@ -604,7 +646,7 @@ public abstract class Kasaaja {
         POCDMT000040Component5 component = of.createPOCDMT000040Component5();
         component.setSection(of.createPOCDMT000040Section());
         component.getSection().setCode(of.createCE());
-        fetchAttributes(codeNum + ".component", component.getSection().getCode());
+        fetchAttributes(codeNum, component.getSection().getCode());
         component.getSection().getCode().setCode(codeNum);
         component.getSection().setTitle(of.createST());
         component.getSection().getTitle().getContent().add(component.getSection().getCode().getDisplayName());
@@ -956,5 +998,28 @@ public abstract class Kasaaja {
         yksik.setWholeOrganization(luoOrganization(organisaatio.getToimintaYksikko()));
         organization.setAsOrganizationPartOf(yksik);
     }
-
+    
+    private POCDMT000040Consent createAuthorizationConsent(String consentCodevalue) {
+    	POCDMT000040Consent consent = of.createPOCDMT000040Consent();
+    	consent.getMoodCodes().add("EVN");
+    	consent.getClassCodes().add("CONS");
+    	consent.setCode(createCode("alaikainenkielto", consentCodevalue));
+    	
+    	CS cs = of.createCS();
+    	cs.setCode("completed");
+    	consent.setStatusCode(cs);
+    	
+    	POCDMT000040InfrastructureRootTemplateId templateIdElement = of.createPOCDMT000040InfrastructureRootTemplateId();
+        fetchAttributes("LM.AUTH.CONSENT.templateId", templateIdElement);
+        consent.getTemplateIds().add(templateIdElement);
+        return consent;
+    }
+    
+    private CE createCode(String codeName, String codeValue) {
+    	CE c = of.createCE();
+        c.setCode(codeValue);
+        fetchAttributes(codeValue + "." + codeName, c);
+        
+        return c;
+    }
 }

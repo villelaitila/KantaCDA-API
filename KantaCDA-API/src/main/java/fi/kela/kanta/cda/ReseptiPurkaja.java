@@ -1,18 +1,18 @@
-/*******************************************************************************
- * Copyright 2017 Kansaneläkelaitos
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License.  You may obtain a copy
- * of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+<!--
+  Copyright 2020 Kansaneläkelaitos
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+-->
 package fi.kela.kanta.cda;
 
 import java.math.BigDecimal;
@@ -33,6 +33,7 @@ import org.hl7.v3.IVLPQ;
 import org.hl7.v3.IVLTS;
 import org.hl7.v3.MO;
 import org.hl7.v3.POCDMT000040Author;
+import org.hl7.v3.POCDMT000040Authorization;
 import org.hl7.v3.POCDMT000040ClinicalDocument;
 import org.hl7.v3.POCDMT000040Component4;
 import org.hl7.v3.POCDMT000040Consumable;
@@ -42,7 +43,6 @@ import org.hl7.v3.POCDMT000040HealthCareFacility;
 import org.hl7.v3.POCDMT000040LabeledDrug;
 import org.hl7.v3.POCDMT000040Observation;
 import org.hl7.v3.POCDMT000040Participant2;
-import org.hl7.v3.POCDMT000040Person;
 import org.hl7.v3.POCDMT000040RecordTarget;
 import org.hl7.v3.POCDMT000040SubstanceAdministration;
 import org.hl7.v3.POCDMT000040Supply;
@@ -111,6 +111,7 @@ public class ReseptiPurkaja extends Purkaja {
                 puraLeimakentat(clinicalDocument, laakemaarays);
                 puraPotilas(clinicalDocument, laakemaarays);
                 puraAuthor(clinicalDocument, laakemaarays);
+                puraAuthorization(clinicalDocument, laakemaarays);
                 puraComponentOf(clinicalDocument, laakemaarays);
                 puraEntryt(clinicalDocument, laakemaarays);
                 varmistaValmisteenlaji(laakemaarays);
@@ -422,7 +423,9 @@ public class ReseptiPurkaja extends Purkaja {
         }
         else if ( laakemaarays.getReseptintyyppi().equals(reseptinTyyppiKokonaismaara) ) {
             laakemaarays.setLaakkeenKokonaismaaraUnit(supply.getQuantity().getUnit());
-            laakemaarays.setLaakkeenKokonaismaaraValue(Integer.parseInt(supply.getQuantity().getValue()));
+            // Joillakin lääkemääräyksillä kokonaismäärä voi olla ilmaistuna esim. 123.0
+            BigDecimal bd = new BigDecimal(supply.getQuantity().getValue()); 
+            laakemaarays.setLaakkeenKokonaismaaraValue(bd.intValue());
         }
         else if ( laakemaarays.getReseptintyyppi().equals(reseptinTyyppiKestoaika) ) {
             IVLTS time = (IVLTS) supply.getEffectiveTimes().get(0);
@@ -1046,7 +1049,25 @@ public class ReseptiPurkaja extends Purkaja {
             }
         }
     }
-
+    
+    /**
+     * Purkaa Alaikäisen potilastietojen luovuttaminen huoltajille clinicaDocumentista
+     *
+     * @param clinicalDocument
+     *            POCDMT000040ClinicalDocument josta tiedot haetaan
+     * @param laakemaarays
+     *            LaakemaaraysTO johon tiedot sijoitetaan
+     * @throws PurkuException
+     */
+    protected void puraAuthorization(POCDMT000040ClinicalDocument clinicalDocument, LaakemaaraysTO laakemaarays)
+            throws PurkuException {
+    	List<POCDMT000040Authorization> authorizations = clinicalDocument.getAuthorizations();
+    	if(authorizations != null && !authorizations.isEmpty()) {
+    		POCDMT000040Authorization auth = authorizations.get(0);
+    		laakemaarays.setAlaikaisenKieltoKoodi(auth.getConsent().getCode().getCode());
+    	}
+    }
+    
     /**
      * Apumetodi observation/code/coden tarkistamiseen Varmistaa että observation/code/code on olemassa ja vertaa
      * annettuun codeen
