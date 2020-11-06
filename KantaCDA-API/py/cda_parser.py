@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Generated Sat Nov  7 01:43:53 2020 by generateDS.py version 2.36.6.
+# Generated Sat Nov  7 00:56:01 2020 by generateDS.py version 2.36.6.
 # Python 3.9.0 (default, Oct 27 2020, 00:11:08)  [GCC 9.3.0]
 #
 # Command line options:
@@ -483,6 +483,9 @@ except ImportError as exp:
             for patterns1 in patterns:
                 found2 = False
                 for patterns2 in patterns1:
+                    # Fix cases when target is something odd: TODO study root cause
+                    if not target or target == True:
+                        continue
                     mo = re_.search(patterns2, target)
                     if mo is not None and len(mo.group(0)) == len(target):
                         found2 = True
@@ -30002,6 +30005,8 @@ class CR(ANY):
             self.validate_bn(self.inverted)    # validate type bn
         super(CR, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        # Initialize obj_ to avoid failing in elif branch with undefined var
+        obj_ = None
         if nodeName_ == 'name':
             class_obj_ = self.get_class_obj_(child_, CV)
             class_obj_ = CV.factory(parent_object_=self)
@@ -30016,6 +30021,8 @@ class CR(ANY):
         elif nodeName_ == 'value':
             class_obj_ = self.get_class_obj_(child_, CD)
             class_obj_ = CD.factory(parent_object_=self)
+            # Avoid failing: TODO Study root cause
+            if not obj_: return
             obj_.build(child_, gds_collector_=gds_collector_)
             obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
                 MixedContainer.TypeNone, 'value', obj_)
