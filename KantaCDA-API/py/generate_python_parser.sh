@@ -4,8 +4,8 @@ export YOUR_PYTHON_INSTALLATION=/home/ville/opt/python-3.9.0
 pip3 install generateDS
 
 # Switch directory and generate the parser to py dir
-pushd ../Schemas && python3 $YOUR_PYTHON_INSTALLATION/bin/generateDS.py  -o ../py/cda_parser.py CDA_Fi.xsd ; popd
-
+cd ../Schemas && python3 $YOUR_PYTHON_INSTALLATION/bin/generateDS.py  -o ../py/cda_parser.py CDA_Fi.xsd
+cd ../py
 # Fix it if py2k stuff
 2to3 -n --no-diffs -j4 -w cda_parser.py
 
